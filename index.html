@@ -19,7 +19,7 @@
     <script type="text/javascript">
         // more documentation available at
         // https://github.com/tensorflow/tfjs-models/tree/master/speech-commands
-      
+
         // the link to your model provided by Teachable Machine export panel
         const URL = "https://teachablemachine.withgoogle.com/models/xV41ylkJr/";
 
@@ -54,7 +54,28 @@
                 const scores = result.scores; // probability of prediction for each class
                 // render the probability scores per class
                 for (let i = 0; i < classLabels.length; i++) {
-                    const classPrediction = classLabels[i] + ": " + result.scores[i].toFixed(2);
+                    const score = result.scores[i].toFixed(2);
+                    if (classLabels[i] != '_background_noise_' && score > 0.8) {
+                      if (classLabels[i] == 'amazing') {
+                        console.log("amazing:" + score);
+                        setLightStatus('on', 'FF0000');
+                        return;
+                      } else if (classLabels[i] == 'soon') {
+                        console.log("soon");
+                        setLightStatus('on', '0000FF');
+                        return;
+                      } else if (classLabels[i] == 'zazaza') {
+                        console.log("zazaza");
+                        setLightStatus('on', '00FF00');
+                        return;
+                      } else if (classLabels[i] == 'yubi') {
+                        console.log("yubi");
+                        setLightStatus('off', 'FF0000');
+                        return;
+                      }
+                    }
+                    const classPrediction = classLabels[i] + ": " + score;
+                    console.log("class:" + classPrediction);
                     labelContainer.childNodes[i].innerHTML = classPrediction;
                 }
             }, {
@@ -72,25 +93,29 @@
           let xhr = new XMLHttpRequest();
           const token = document.getElementById('token').value;
 
+          // 3. ネットワーク経由でリクエスト送信
           // 2. 設定: URL /article/.../load に対する GET-リクエスト
           xhr.open('PUT', 'https://api.lifx.com/v1/lights/all/state');
-          xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded;charset=UTF-8');
+          xhr.setRequestHeader('Content-Type', 'application/json');
           xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-          // 3. ネットワーク経由でリクエスト送信
-          let formData = new FormData();
-          formData.append('power', power);
-          formData.append('color', color);
-          formData.append('brightness', '1.0');
-          xhr.send(formData);
+
+          xhr.send(JSON.stringify({
+            'power': power,
+            'color': color,
+            'brightness': 1.0
+          }));
 
           // 4. レスポンスを受け取った後に呼び出されます
           xhr.onload = function() {
-            if (xhr.status != 200) { // レスポンスの HTTP ステータスを解析
-              alert(`Error ${xhr.status}: ${xhr.statusText}`); // e.g. 404: Not Found
+            if (xhr.status != 207) { // レスポンスの HTTP ステータスを解析
+              console.log(`Error ${xhr.status}: ${xhr.statusText}`); // e.g. 404: Not Found
             } else { // show the result
-              alert(`Done, got ${xhr.response.length} bytes`); // responseText is the server
+              console.log(`Done, got ${xhr.response.length} bytes`); // responseText is the server
             }
           };
+          xhr.onreadystatechange = function() {
+
+          }
         }
     </script>
   </body>
