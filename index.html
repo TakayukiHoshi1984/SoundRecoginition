@@ -9,6 +9,7 @@
   <body>
 
     <div>Teachable Machine Audio Model</div>
+    <input type="text" id="token">
     <button type="button" onclick="init()">Start</button>
     <div id="label-container"></div>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
@@ -17,7 +18,7 @@
     <script type="text/javascript">
         // more documentation available at
         // https://github.com/tensorflow/tfjs-models/tree/master/speech-commands
-
+      
         // the link to your model provided by Teachable Machine export panel
         const URL = "https://teachablemachine.withgoogle.com/models/xV41ylkJr/";
 
@@ -64,6 +65,31 @@
 
             // Stop the recognition in 5 seconds.
             // setTimeout(() => recognizer.stopListening(), 5000);
+        }
+
+        async function setLightStatus(power, color) {
+          let xhr = new XMLHttpRequest();
+          const token = document.getElementById('token').value;
+
+          // 2. 設定: URL /article/.../load に対する GET-リクエスト
+          xhr.open('PUT', 'https://api.lifx.com/v1/lights/all/state');
+          xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded;charset=UTF-8');
+          xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+          // 3. ネットワーク経由でリクエスト送信
+          let formData = new FormData();
+          formData.append('power', power);
+          formData.append('color', color);
+          formData.append('brightness', '1.0');
+          xhr.send(formData);
+
+          // 4. レスポンスを受け取った後に呼び出されます
+          xhr.onload = function() {
+            if (xhr.status != 200) { // レスポンスの HTTP ステータスを解析
+              alert(`Error ${xhr.status}: ${xhr.statusText}`); // e.g. 404: Not Found
+            } else { // show the result
+              alert(`Done, got ${xhr.response.length} bytes`); // responseText is the server
+            }
+          };
         }
     </script>
   </body>
